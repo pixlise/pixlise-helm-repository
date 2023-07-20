@@ -1,0 +1,16 @@
+{{ if .Values.api.custom_config }}
+{{ if .Values.api.custom_config.values }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+ name: {{ template "pixlise.fullname" . }}-api-config
+ labels:
+   app: {{ template "pixlise.name" . }}
+   chart: {{ template "pixlise.chart" . }}
+   release: {{ .Release.Name }}
+   heritage: {{ .Release.Service }}
+data:
+  custom_config.json: |-
+{{ .Values.api.custom_config.values | toPrettyJson | indent 4 }}
+{{ end }}
+{{ end }}

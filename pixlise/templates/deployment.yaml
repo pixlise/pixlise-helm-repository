@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pixlise.fullname" . }}-core
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '2112'
+    prometheus.io/path: '/metrics'
+  labels:
+    {{- include "pixlise.labels" . | nindent 4 }}
+    {{- include "pixlise.selectorLabels" . | nindent 4 }}-core
+    app.kubernetes.io/component: api
+    backstage.io/kubernetes-id: pixlise-api
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit | default 5 }}
+  selector:
+    matchLabels:
+      {{- include "pixlise.selectorLabels" . | nindent 6 }}-core
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '2112'
+        {{- with .Values.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "pixlise.selectorLabels" . | nindent 8 }}-core
+        backstage.io/kubernetes-id: pixlise-api
+    spec:
+      containers:
+        - name: {{ .Chart.Name  }}-core
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag | default .Chart.AppVersion }}"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          args:
+{{ toYaml .Values.api.args | indent 10 }}
+          ports:
+            - containerPort: 8080
+              name: backend-http
+          envFrom:
+            - configMapRef:
+                name: {{ include "pixlise.fullname" . }}-env
+                optional: true
+            - secretRef:
+                name: {{ include "pixlise.fullname" . }}-env
+                optional: true
+            {{- if .Values.api.awsRefSecret }}
+            - secretRef:
+                name: {{ .Values.api.awsRefSecret }}
+                optional: true
+            {{ end }}
+            {{- if .Values.api.auth0SecretRef }}
+            - secretRef:
+                name: {{ .Values.api.auth0SecretRef }}
+                optional: true
+            {{ end }}
+          volumeMounts:
+            - name: custom-config
+              mountPath: /var/config
+      volumes:
+        - name: custom-config
+          {{- if .Values.api.custom_config.values }}
+          configMap:
+            name: {{ include "pixlise.fullname" . }}-api-config
+          {{ else if .Values.api.custom_config.configMapRef }}
+          configMap:
+            name: {{ .Values.api.custom_config.configMapRef }}
+          {{ else if .Values.api.custom_config.secretRef }}
+          secret:
+            secretName: {{ .Values.api.custom_config.secretRef }}
+          {{ end }}
+            optional: false
+{{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+{{- end }}
+{{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+{{- end }}
+{{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+{{- end }}
+      serviceAccountName: {{ include "pixlise.serviceAccountName" . }}

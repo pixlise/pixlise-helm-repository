@@ -1,0 +1,105 @@
+replicaCount: 2
+api:
+  dns: www-api.pixlise.org
+  image:
+    repository: ghcr.io/pixlise/core
+    pullPolicy: Always
+    tag: ''
+  service:
+    type: NodePort
+    port: 8080
+    targetPort: 8080
+    name: http
+  awsRefSecret: ''
+  auth0SecretRef: ''
+  custom_config:
+    values:
+      CoresPerNode: 1
+    # configMapRef: name-of-config-map
+    # secretRef: name-of-secret
+ui:
+  dns: www.pixlise.org
+  image:
+    repository: ghcr.io/pixlise/pixlise-ui
+    pullPolicy: Always
+    tag: ''
+  config:
+    apihost: ''
+    auth0Domain: ''
+    auth0Client: ''
+    auth0Audience: ''
+    auth0Namespace: ''
+    sentryDSN: ''
+    appDomain: ''
+    versionPollUrl: ''
+    unassignedRole: ''
+  service:
+    type: NodePort
+    port: 80
+    targetPort: 80
+    name: http
+
+imagePullSecrets:
+  - name: api-auth
+
+nameOverride: ''
+fullnameOverride: ''
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ''
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+ingress:
+  enabled: false
+  #alb:
+  #  apihost: dnstest1-api.pixlise.org
+  #  uihost: dnstest1.pixlise.org
+  style: nginx
+  annotations:
+    #nginx.ingress.kubernetes.io/rewrite-target: /$2
+    #kubernetes.io/tls-acme: "true"
+    #alb.ingress.kubernetes.io/scheme: internet-facing
+    #alb.ingress.kubernetes.io/target-type: ip
+    #alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+    #alb.ingress.kubernetes.io/certificate-arn: ''
+    #external-dns.alpha.kubernetes.io/hostname: dnstest1.pixlise.org, dnstest1-api.pixlise.org
+
+  # extraRules:
+  #   - host: pixlise.org
+  #     http:
+  #       paths:
+  #       - backend:
+  #           service:
+  #             name: redirect-to-www
+  #             port:
+  #               name: use-annotation
+  #         path: /
+  #         pathType: Prefix
+  publicHost: api.pixlise.org
+  tls: []
+
+resources:
+  limits:
+    cpu: '1'
+  requests:
+    cpu: '0.5'
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

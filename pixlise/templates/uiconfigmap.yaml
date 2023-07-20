@@ -1,0 +1,37 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ template "pixlise.fullname" . }}-ui-config
+  labels:
+    app: {{ template "pixlise.name" . }}
+    chart: {{ template "pixlise.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  pixlise-config.json : |
+    {
+      "production": true,
+      "route_dbg": false,
+      "name": "prod",
+
+      "auth0_domain": "{{ .Values.ui.config.auth0Domain }}",
+      "auth0_client": "{{ .Values.ui.config.auth0Client }}",
+      "auth0_audience": "{{ .Values.ui.config.auth0Audience }}",
+      "auth0_namespace": "{{ .Values.ui.config.auth0Namespace }}",
+
+      "sentry_dsn": "{{ .Values.ui.config.sentryDSN }}",
+
+      "appDomain": "{{ .Values.ui.config.appDomain }}",
+      "apiUrl": "{{ .Values.ui.config.apihost }}",
+
+      "alertPollInterval_ms": 10000,
+      "versionPollInterval_ms": 300000,
+      "versionPollUrl": "{{ .Values.ui.config.versionPollUrl }}",
+
+      "engineeringTabEnabled": false,
+      "allowDifferentMapSizesInExpressions": true,
+
+      "expectedDataCollectionAgreementVersion": "1.0",
+
+      "unassignedNewUserRoleId": "{{ .Values.ui.config.unassignedRole }}"
+    }

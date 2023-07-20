@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "pixlise.fullname" . }}-test-connection"
+  labels:
+    {{- include "pixlise.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      {{ if eq .Values.api.service.type "NodePort" }}
+      args: ['{{ include "pixlise.fullname" . }}-public:{{ .Values.api.service.port }}']
+      {{ else }}
+      args: ['{{ .Values.ingress.alb.apihost }}:443']
+      {{ end }}
+  restartPolicy: Never

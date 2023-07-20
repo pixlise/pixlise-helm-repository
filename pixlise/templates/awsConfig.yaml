@@ -1,0 +1,19 @@
+{{- if .Values.awsConfig }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+ name: {{ template "pixlise.fullname" . }}
+ labels:
+   app: {{ template "pixlise.name" . }}
+   chart: {{ template "pixlise.chart" . }}
+   release: {{ .Release.Name }}
+   heritage: {{ .Release.Service }}
+data:
+  {{- with .Values.awsConfig }}
+  AWS_ACCESS_KEY_ID: {{ .aws_access_key_id }}
+  AWS_SECRET_ACCESS_KEY: {{ .aws_secret_access_key }}
+  AWS_REGION: {{ .aws_region }}
+  AWS_DEFAULT_REGION: {{ .aws_default_region }}
+  AWS_S3_US_EAST_1_REGIONAL_ENDPOINT: {{ .aws_regional_endpoint }}
+  {{- end }}
+{{- end }}
